@@ -1,7 +1,11 @@
 from flask import Flask, request, jsonify, render_template_string
 from frontend_ui import HTML_CODE
-# Baad mein hum tutor_engine import karenge
-# from tutor_engine import get_ai_response 
+
+# Import Engine safely
+try:
+    from tutor_engine import get_ai_response
+except ImportError:
+    def get_ai_response(msg, sub): return f"Echo: {msg} (Engine Missing)"
 
 app = Flask(__name__)
 
@@ -9,6 +13,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
+    # Frontend HTML serve karna
     return render_template_string(HTML_CODE)
 
 @app.route('/api/chat', methods=['POST'])
@@ -18,17 +23,13 @@ def chat_api():
         user_message = data.get('message', '')
         subject = data.get('subject', 'General')
         
-        # --- ABHI KE LIYE DUMMY REPLY (Jab tak engine na ban jaye) ---
-        # Next step mein hum isay AI se connect karenge
-        ai_reply = f"Thinking about '{user_message}' in context of {subject}..."
-        
-        # Real connection next step mein:
-        # ai_reply = get_ai_response(user_message, subject)
+        # Call AI Engine
+        ai_reply = get_ai_response(user_message, subject)
 
         return jsonify({"reply": ai_reply})
 
     except Exception as e:
-        return jsonify({"reply": f"Error: {str(e)}"}), 500
+        return jsonify({"reply": f"Server Error: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run()
