@@ -30,7 +30,7 @@ HTML_CODE = """
         }
 
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; transition: 0.3s; display: flex; justify-content: center; height: 100vh; }
-        .container { width: 100%; max-width: 480px; display: flex; flex-direction: column; height: 100%; }
+        .container { width: 100%; max-width: 480px; display: flex; flex-direction: column; height: 100%; position: relative; }
         
         .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
         .title { font-weight: bold; font-size: 20px; }
@@ -40,12 +40,9 @@ HTML_CODE = """
         .active { display: flex; flex-direction: column; }
 
         .auth-box { background: var(--card-bg); padding: 25px; border-radius: 12px; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); box-sizing: border-box;}
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); box-sizing: border-box; font-size: 16px; }
         
         .btn-primary { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
-        
-        .divider { margin: 20px 0; font-size: 14px; color: #888; display: flex; align-items: center; justify-content: center; }
-        .divider::before, .divider::after { content: ""; flex: 1; border-bottom: 1px solid var(--border-color); margin: 0 10px; }
         
         .social-btn { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500; transition: 0.2s; }
         .google-icon { color: #DB4437; }
@@ -65,11 +62,27 @@ HTML_CODE = """
         .chat-input-area { padding: 10px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; background: var(--bg-color); }
         .send-btn { width: 50px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; }
 
+        /* LOADING SPINNER OVERLAY */
+        #loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none; justify-content: center; align-items: center; flex-direction: column;
+            z-index: 1000; color: white; border-radius: 12px;
+        }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- LOADING SCREEN -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loading-text">Logging in...</div>
+    </div>
+
     <div class="header">
         <div class="title">🎓 AI Tutor Pro</div>
         <button class="theme-btn" onclick="toggleTheme()"><i class="fas fa-adjust"></i></button>
@@ -79,17 +92,24 @@ HTML_CODE = """
     <div id="screen-login" class="screen">
         <div class="auth-box">
             <h2>Welcome Back</h2>
+            
+            <label style="display:block; text-align:left; font-size:12px; margin-left:5px; color:#888;">Select Language</label>
+            <select id="login-lang">
+                <option value="English">English</option>
+                <option value="Urdu">Urdu (اردو)</option>
+                <option value="Roman Urdu">Roman Urdu (Kaisay ho)</option>
+                <option value="Hindi">Hindi (हिंदी)</option>
+            </select>
+
             <input type="text" id="login-email" placeholder="Email Address">
             <input type="password" id="login-pass" placeholder="Password">
+            
             <button class="btn-primary" onclick="handleLogin('email')">Sign In</button>
             
-            <div class="divider">OR</div>
+            <div style="margin: 15px 0; color:#888; font-size:12px;">OR</div>
             
             <button class="social-btn" onclick="handleLogin('Google')">
-                <i class="fab fa-google google-icon"></i> Continue with Google
-            </button>
-            <button class="social-btn" onclick="handleLogin('GitHub')">
-                <i class="fab fa-github"></i> Continue with GitHub
+                <i class="fab fa-google google-icon"></i> Google
             </button>
 
             <div class="link" onclick="showScreen('signup')">Create Account</div>
@@ -100,6 +120,14 @@ HTML_CODE = """
     <div id="screen-signup" class="screen">
         <div class="auth-box">
             <h2>Create Account</h2>
+            
+            <label style="display:block; text-align:left; font-size:12px; margin-left:5px; color:#888;">Preferred Language</label>
+            <select id="signup-lang">
+                <option value="English">English</option>
+                <option value="Urdu">Urdu</option>
+                <option value="Hindi">Hindi</option>
+            </select>
+
             <input type="text" id="signup-name" placeholder="Full Name">
             <input type="email" id="signup-email" placeholder="Email">
             <input type="password" id="signup-pass" placeholder="Password">
@@ -111,14 +139,19 @@ HTML_CODE = """
     <!-- 3. DASHBOARD -->
     <div id="screen-dashboard" class="screen">
         <h3>Hi, <span id="user-name-display">Student</span>! 👋</h3>
-        <p>Start learning:</p>
+        <p>You can ask <b>ANY</b> educational question here.</p>
+        
         <div class="subject-grid">
+            <div class="subject-card" onclick="startChat('Ask Anything')">
+                <span class="subject-icon" style="color:#007bff">✨</span>
+                <b>Ask Any Question</b>
+                <div style="font-size:11px; color:#888; margin-top:5px;">Homework, Career, Life</div>
+            </div>
             <div class="subject-card" onclick="startChat('Math')"><span class="subject-icon">📐</span>Math</div>
             <div class="subject-card" onclick="startChat('Science')"><span class="subject-icon">🧬</span>Science</div>
             <div class="subject-card" onclick="startChat('History')"><span class="subject-icon">🏛️</span>History</div>
             <div class="subject-card" onclick="startChat('Coding')"><span class="subject-icon">💻</span>Coding</div>
             <div class="subject-card" onclick="startChat('English')"><span class="subject-icon">📖</span>English</div>
-            <div class="subject-card" onclick="startChat('General')"><span class="subject-icon">🤖</span>General</div>
         </div>
         <div class="link" onclick="logout()" style="color: #dc3545; margin-top: 30px;">Logout</div>
     </div>
@@ -140,74 +173,101 @@ HTML_CODE = """
 </div>
 
 <script>
-    // --- APP STARTUP (AUTO LOGIN) ---
+    // --- APP STARTUP ---
+    let currentUser = null;
+    let currentLang = "English";
+
     document.addEventListener("DOMContentLoaded", () => {
-        // 1. Check Saved Theme
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.body.setAttribute('data-theme', savedTheme);
 
-        // 2. Check Saved User
         const savedUser = localStorage.getItem('tutorUser');
+        const savedLang = localStorage.getItem('tutorLang');
+        
         if(savedUser) {
             currentUser = savedUser;
+            currentLang = savedLang || "English";
             document.getElementById('user-name-display').innerText = currentUser;
-            showScreen('dashboard'); // Direct Dashboard
+            showScreen('dashboard');
         } else {
-            showScreen('login'); // Show Login
+            showScreen('login');
         }
     });
 
-    // --- AUTH LOGIC ---
-    let currentUser = null;
+    // --- LOADING & AUTH ---
+    function showLoading(text, callback) {
+        const overlay = document.getElementById('loading-overlay');
+        const txt = document.getElementById('loading-text');
+        txt.innerText = text;
+        overlay.style.display = 'flex';
+        
+        // 3 SECONDS DELAY SIMULATION
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            callback();
+        }, 3000); 
+    }
 
     function handleLogin(provider) {
+        let userTemp = "";
+        let langTemp = "English";
+
         if(provider === 'email') {
             const email = document.getElementById('login-email').value;
             if(!email) return alert("Enter email");
-            currentUser = email.split('@')[0];
+            userTemp = email.split('@')[0];
+            langTemp = document.getElementById('login-lang').value;
         } else {
-            currentUser = provider + " User";
+            userTemp = provider + " User";
+            langTemp = document.getElementById('login-lang').value;
         }
         
-        // SAVE USER TO BROWSER MEMORY
-        localStorage.setItem('tutorUser', currentUser);
-        
-        document.getElementById('user-name-display').innerText = currentUser;
-        showScreen('dashboard');
+        // Start Loading Effect
+        showLoading("Verifying Credentials...", () => {
+            currentUser = userTemp;
+            currentLang = langTemp;
+            localStorage.setItem('tutorUser', currentUser);
+            localStorage.setItem('tutorLang', currentLang);
+            
+            document.getElementById('user-name-display').innerText = currentUser;
+            showScreen('dashboard');
+        });
     }
 
     function handleSignup() {
         const name = document.getElementById('signup-name').value;
         if(!name) return alert("Enter name");
-        currentUser = name;
         
-        // SAVE USER
-        localStorage.setItem('tutorUser', currentUser);
+        const lang = document.getElementById('signup-lang').value;
         
-        document.getElementById('user-name-display').innerText = currentUser;
-        showScreen('dashboard');
+        showLoading("Creating Account...", () => {
+            currentUser = name;
+            currentLang = lang;
+            localStorage.setItem('tutorUser', currentUser);
+            localStorage.setItem('tutorLang', currentLang);
+            
+            document.getElementById('user-name-display').innerText = currentUser;
+            showScreen('dashboard');
+        });
     }
 
     function logout() {
-        // REMOVE USER
         localStorage.removeItem('tutorUser');
+        localStorage.removeItem('tutorLang');
         currentUser = null;
         showScreen('login');
     }
 
-    // --- UI LOGIC ---
+    // --- NAVIGATION ---
     function toggleTheme() {
         const body = document.body;
         const newTheme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
         body.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme); // Save Theme preference
+        localStorage.setItem('theme', newTheme);
     }
 
     function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => { 
-            s.classList.remove('active'); 
-            s.style.display = 'none'; 
-        });
+        document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
         const t = document.getElementById('screen-' + id);
         t.classList.add('active');
         t.style.display = (id === 'chat') ? 'flex' : 'block';
@@ -219,7 +279,16 @@ HTML_CODE = """
     function startChat(subject) {
         currentSubject = subject;
         document.getElementById('chat-subject-title').innerText = subject;
-        document.getElementById('chat-history').innerHTML = `<div class="message ai-msg">Hello ${currentUser}! I am your <b>${subject}</b> Tutor.</div>`;
+        
+        // Greeting in selected language (Basic Mock)
+        let greeting = `Hello ${currentUser}!`;
+        if(currentLang.includes("Urdu") || currentLang.includes("Hindi")) greeting = `Namaste/Salam ${currentUser}!`;
+        
+        document.getElementById('chat-history').innerHTML = `
+            <div class="message ai-msg">
+                ${greeting} I am your <b>${subject}</b> Tutor. <br>
+                <small>(Language: ${currentLang})</small>
+            </div>`;
         showScreen('chat');
     }
 
@@ -236,7 +305,11 @@ HTML_CODE = """
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: text, subject: currentSubject })
+                body: JSON.stringify({ 
+                    message: text, 
+                    subject: currentSubject,
+                    language: currentLang // Send Language to Backend
+                })
             });
             const data = await res.json();
             document.getElementById(loadingId).innerText = data.reply;
