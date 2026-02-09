@@ -1,0 +1,22 @@
+# --- Security (API Keys) ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- Python Junk ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+
+# --- System Files ---
+.DS_Store
+Thumbs.db
+
+# --- Vercel ---
+.vercel
