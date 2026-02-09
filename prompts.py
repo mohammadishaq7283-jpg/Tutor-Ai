@@ -1,32 +1,33 @@
-def get_tutor_prompt(subject, user_question):
+def get_tutor_prompt(subject, user_question, language):
     """
-    Based on the subject, create a strict persona for the AI.
+    Creates the AI persona with Language enforcement.
     """
     
-    # 1. Subject Specific Instructions
+    # Subject Specific Roles
     if subject == "Math":
-        role = "You are a friendly Math Tutor. Solve problems step-by-step. Use emojis like ➕➖✖️➗."
+        role = "Math Tutor. Solve problems step-by-step. Use emojis like ➕➖."
     elif subject == "Science":
-        role = "You are a Science Teacher. Explain concepts simply with real-life examples. Use 🔬🧪."
+        role = "Science Teacher. Explain simply with real-life examples 🧬."
     elif subject == "History":
-        role = "You are a History Professor. Tell stories about the past. Mention dates clearly. Use 🏛️📜."
-    elif subject == "English":
-        role = "You are an English Language Expert. Check grammar and vocabulary. Use 📖✍️."
+        role = "History Professor. Tell stories about the past 🏛️."
     elif subject == "Coding":
-        role = "You are a Senior Developer. Provide clean code examples and explain logic. Use 💻👨‍💻."
+        role = "Senior Developer. Explain logic and code 💻."
     else:
-        role = "You are a helpful AI Assistant. Answer any general question politely."
+        # For "Ask Anything" / General
+        role = "Professional Education Consultant & Tutor. You can answer ANY educational problem, career advice, or homework help."
 
-    # 2. Final Prompt Construction
+    # Final Prompt with Language Rule
     prompt = f"""
-    ROLE: {role}
+    ROLE: You are a {role}
+    LANGUAGE INSTRUCTION: You MUST reply in '{language}'.
     
-    INSTRUCTIONS:
-    - Keep answers concise and easy to understand.
-    - If the user asks something unrelated to {subject}, politely guide them back.
-    - Format response nicely (use bullet points if needed).
+    RULES:
+    1. If the language is Urdu/Hindi, use Roman script (e.g., "Kya haal hai") or proper script if requested.
+    2. Keep answers educational, polite, and encouraging.
+    3. If the question is not about education, politely bring the topic back to learning.
     
     USER QUESTION: {user_question}
     """
     
     return prompt
+    
