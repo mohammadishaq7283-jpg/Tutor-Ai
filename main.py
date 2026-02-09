@@ -1,19 +1,15 @@
 from flask import Flask, request, jsonify, render_template_string
 from frontend_ui import HTML_CODE
 
-# Import Engine safely
 try:
     from tutor_engine import get_ai_response
 except ImportError:
-    def get_ai_response(msg, sub): return f"Echo: {msg} (Engine Missing)"
+    def get_ai_response(msg, sub, lang): return f"Echo ({lang}): {msg}"
 
 app = Flask(__name__)
 
-# --- ROUTES ---
-
 @app.route('/')
 def home():
-    # Frontend HTML serve karna
     return render_template_string(HTML_CODE)
 
 @app.route('/api/chat', methods=['POST'])
@@ -22,9 +18,10 @@ def chat_api():
         data = request.json
         user_message = data.get('message', '')
         subject = data.get('subject', 'General')
+        language = data.get('language', 'English') # Default English
         
-        # Call AI Engine
-        ai_reply = get_ai_response(user_message, subject)
+        # AI ko call karte waqt language bhejen
+        ai_reply = get_ai_response(user_message, subject, language)
 
         return jsonify({"reply": ai_reply})
 
