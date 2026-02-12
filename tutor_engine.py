@@ -4,14 +4,20 @@ from prompts import get_tutor_prompt
 
 # --- CONFIG ---
 BASE_URL = "https://openrouter.ai/api/v1"
-# Google Gemini Flash (Sabse Fast aur Free hai - Timeout se bachayega)
-MODEL_NAME = "google/gemini-2.0-flash-exp:free" 
+
+# Updated Model (DeepSeek R1 - Free Version)
+MODEL_NAME = "deepseek/deepseek-r1:free"
 
 def get_ai_response(user_message, subject, language):
+    """
+    Connects to AI API to get tutor response.
+    """
+    
     api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("API_KEY")
     if not api_key:
-        return "⚠️ Error: API Key missing!"
+        return "⚠️ Error: API Key missing in Settings!"
 
+    # Prompt generate karna
     system_prompt = get_tutor_prompt(subject, user_message, language)
 
     try:
@@ -32,7 +38,7 @@ def get_ai_response(user_message, subject, language):
         if response and response.choices:
             return response.choices[0].message.content
         else:
-            return "Thinking... (No response)"
+            return "Thinking... (No response from AI)"
 
     except Exception as e:
         return f"Connection Error: {str(e)}"
