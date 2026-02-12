@@ -1,4 +1,4 @@
-    async function sendMessage() {
+        async function sendMessage() {
         const input = document.getElementById('user-msg');
         const text = input.value.trim();
         if(!text) return;
