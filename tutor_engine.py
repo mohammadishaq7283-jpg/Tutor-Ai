@@ -5,13 +5,12 @@ from prompts import get_tutor_prompt
 # --- CONFIG ---
 BASE_URL = "https://openrouter.ai/api/v1"
 
-# Updated Model (DeepSeek R1 - Free Version)
-MODEL_NAME = "deepseek/deepseek-r1:free"
+# --- MODEL SELECTION ---
+# Yeh model abhi active hai (Fast & Free)
+# Agar yeh bhi band ho jaye, to 'meta-llama/llama-3.2-3b-instruct:free' use karein
+MODEL_NAME = "google/gemini-2.0-flash-lite-preview-02-05:free"
 
 def get_ai_response(user_message, subject, language):
-    """
-    Connects to AI API to get tutor response.
-    """
     
     api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("API_KEY")
     if not api_key:
@@ -41,4 +40,8 @@ def get_ai_response(user_message, subject, language):
             return "Thinking... (No response from AI)"
 
     except Exception as e:
-        return f"Connection Error: {str(e)}"
+        # Error message ko saaf dikhana
+        error_msg = str(e)
+        if "404" in error_msg:
+            return "⚠️ Model Error: The AI model is currently down. Please update MODEL_NAME in tutor_engine.py."
+        return f"Connection Error: {error_msg}"
