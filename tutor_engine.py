@@ -5,10 +5,8 @@ from prompts import get_tutor_prompt
 # --- CONFIG ---
 BASE_URL = "https://openrouter.ai/api/v1"
 
-# --- MODEL SELECTION ---
-# Yeh model abhi active hai (Fast & Free)
-# Agar yeh bhi band ho jaye, to 'meta-llama/llama-3.2-3b-instruct:free' use karein
-MODEL_NAME = "google/gemini-2.0-flash-lite-preview-02-05:free"
+# Wahi Model jo Recipe App me chala tha (Stable & Free)
+MODEL_NAME = "stepfun/step-3.5-flash:free"
 
 def get_ai_response(user_message, subject, language):
     
@@ -16,7 +14,6 @@ def get_ai_response(user_message, subject, language):
     if not api_key:
         return "⚠️ Error: API Key missing in Settings!"
 
-    # Prompt generate karna
     system_prompt = get_tutor_prompt(subject, user_message, language)
 
     try:
@@ -40,8 +37,7 @@ def get_ai_response(user_message, subject, language):
             return "Thinking... (No response from AI)"
 
     except Exception as e:
-        # Error message ko saaf dikhana
         error_msg = str(e)
         if "404" in error_msg:
-            return "⚠️ Model Error: The AI model is currently down. Please update MODEL_NAME in tutor_engine.py."
+             return f"⚠️ Model Error: {MODEL_NAME} is currently busy. Try again in 1 minute."
         return f"Connection Error: {error_msg}"
