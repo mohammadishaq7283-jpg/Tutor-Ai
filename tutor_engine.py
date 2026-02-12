@@ -4,18 +4,14 @@ from prompts import get_tutor_prompt
 
 # --- CONFIG ---
 BASE_URL = "https://openrouter.ai/api/v1"
-MODEL_NAME = "stepfun/step-3.5-flash:free" # Free model
+# Google Gemini Flash (Sabse Fast aur Free hai - Timeout se bachayega)
+MODEL_NAME = "google/gemini-2.0-flash-exp:free" 
 
 def get_ai_response(user_message, subject, language):
-    """
-    Connects to AI API to get tutor response in specific language.
-    """
-    
     api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("API_KEY")
     if not api_key:
-        return "⚠️ Error: API Key missing in Settings!"
+        return "⚠️ Error: API Key missing!"
 
-    # Language pass kar rahe hain
     system_prompt = get_tutor_prompt(subject, user_message, language)
 
     try:
