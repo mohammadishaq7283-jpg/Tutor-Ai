@@ -32,146 +32,96 @@ HTML_CODE = """
         }
 
         * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; width: 100%; height: 100vh; overflow: hidden; }
         
-        /* SIDEBAR */
-        .sidebar {
-            width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border-color);
-            display: flex; flex-direction: column; padding: 10px;
-            position: absolute; left: -260px; top: 0; height: 100%; z-index: 1000;
-            transition: 0.3s ease; box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        /* APP CONTAINER - Ensures full height */
+        .app-container {
+            display: flex; flex-direction: column; width: 100%; height: 100%; position: relative;
         }
+
+        /* HEADER - Fixed at Top */
+        .header {
+            flex-shrink: 0; height: 60px; padding: 0 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); background: var(--bg-color); z-index: 10;
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .menu-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-color); }
+        .title { font-weight: bold; font-size: 18px; }
+        .auth-btn-top { padding: 5px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; text-decoration: none; border: 1px solid var(--chat-user); display: flex; align-items: center; gap: 5px; }
+        .btn-signin { background: transparent; color: var(--chat-user); }
+        .btn-profile { background: var(--chat-user); color: white; }
+
+        /* CONTENT AREA - Takes remaining space */
+        .content-area {
+            flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column;
+        }
+
+        /* SCREENS */
+        .screen { display: none; width: 100%; height: 100%; overflow-y: auto; padding: 20px; }
+        
+        /* CHAT SCREEN LAYOUT - SPECIAL FIX */
+        #screen-chat {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            padding: 0; /* No padding on container */
+            height: 100%; /* Full height of content-area */
+            overflow: hidden; /* Prevent double scroll */
+        }
+        #screen-chat.active {
+            display: flex !important; /* Force Flex when active */
+        }
+
+        /* Chat Header Bar */
+        .chat-header-bar {
+            flex-shrink: 0; height: 50px; padding: 0 15px; background: var(--card-bg); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;
+        }
+
+        /* Chat History - SCROLLABLE MIDDLE */
+        #chat-history {
+            flex-grow: 1; /* Takes all available space */
+            overflow-y: auto; /* Scrolls only this part */
+            padding: 15px;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+
+        /* Input Area - FIXED BOTTOM */
+        .chat-input-area {
+            flex-shrink: 0; /* Never shrinks */
+            min-height: 60px;
+            padding: 10px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-color);
+            display: flex; gap: 10px; align-items: center;
+            z-index: 20; /* Stays on top */
+        }
+
+        /* INPUT STYLES */
+        .input-wrapper { flex: 1; position: relative; display: flex; align-items: center; background: var(--input-bg); border-radius: 25px; border: 1px solid var(--border-color); padding: 0 10px; }
+        .chat-input-area input { width: 100%; padding: 12px; padding-right: 35px; border: none; background: transparent; color: var(--text-color); outline: none; font-size: 16px; }
+        .camera-btn { position: absolute; right: 10px; background: none; border: none; color: #888; font-size: 20px; cursor: pointer; padding: 5px; }
+        .send-btn { width: 45px; height: 45px; background: var(--chat-user); color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+
+        /* SIDEBAR */
+        .sidebar { width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 10px; position: absolute; left: -260px; top: 0; height: 100%; z-index: 1000; transition: 0.3s ease; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
         .sidebar.open { left: 0; }
         .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
         .new-chat-btn { width: 100%; padding: 10px; margin-top: 10px; background: var(--chat-user); color: white; border: none; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .history-list { flex: 1; overflow-y: auto; margin-top: 10px; }
         .history-item { padding: 10px; border-radius: 5px; cursor: pointer; color: var(--text-color); margin-bottom: 5px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .history-item:hover { background: var(--card-bg); }
-        
-        /* MAIN LAYOUT */
-        .main-content { flex: 1; display: flex; flex-direction: column; width: 100%; height: 100%; position: relative; }
-        
-        .header { flex-shrink: 0; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); background: var(--bg-color); z-index: 10; }
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        .menu-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-color); }
-        .title { font-weight: bold; font-size: 18px; }
-        
-        .auth-btn-top {
-            padding: 5px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; text-decoration: none; border: 1px solid var(--chat-user); display: flex; align-items: center; gap: 5px;
-        }
-        .btn-signin { background: transparent; color: var(--chat-user); }
-        .btn-profile { background: var(--chat-user); color: white; }
+        .overlay-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 900; display: none; }
 
-        /* SCREENS CONTAINER */
-        /* Important: flex: 1 ensures it takes remaining space, overflow: hidden prevents double scroll */
-        .screen-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; }
-
-        .screen { display: none; width: 100%; height: 100%; overflow-y: auto; padding: 20px; }
-        .screen.active { display: block; }
-        
-        /* SPECIAL FIX FOR CHAT SCREEN LAYOUT */
-        #screen-chat.active {
-            display: flex;
-            flex-direction: column;
-            padding: 0; /* Remove padding for chat screen to fit bars */
-            overflow: hidden; /* Handle inner scroll instead */
-        }
-
-        /* Chat Header */
-        .chat-header-bar {
-            flex-shrink: 0;
-            padding: 10px; background: var(--card-bg); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;
-        }
-
-        /* Chat History (Scrollable Area) */
-        #chat-history { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 15px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-            scroll-behavior: smooth;
-        }
-
-        /* INPUT AREA (FIXED BOTTOM) */
-        .chat-input-area { 
-            flex-shrink: 0; /* Never shrink */
-            padding: 10px; 
-            border-top: 1px solid var(--border-color); 
-            display: flex; 
-            gap: 10px; 
-            background: var(--bg-color); 
-            align-items: center; 
-        }
-
-        /* Input Wrapper for Camera */
-        .input-wrapper { 
-            flex: 1; 
-            position: relative; 
-            display: flex; 
-            align-items: center; 
-            background: var(--input-bg);
-            border-radius: 25px;
-            border: 1px solid var(--border-color);
-            padding: 0 10px;
-        }
-
-        .chat-input-area input { 
-            width: 100%; 
-            padding: 12px; 
-            padding-right: 35px; /* Space for camera icon */
-            border: none; 
-            background: transparent; 
-            color: var(--text-color); 
-            outline: none;
-            font-size: 16px;
-        }
-        
-        .camera-btn { 
-            position: absolute; 
-            right: 10px; 
-            background: none; 
-            border: none; 
-            color: #888; 
-            font-size: 20px; 
-            cursor: pointer; 
-            padding: 5px;
-        }
-        .camera-btn:hover { color: var(--chat-user); }
-
-        .send-btn { 
-            width: 45px; height: 45px; 
-            background: var(--chat-user); 
-            color: white; 
-            border: none; 
-            border-radius: 50%; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 18px;
-            flex-shrink: 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        /* AUTH & DASHBOARD STYLES */
+        /* OTHER STYLES */
         .auth-box { background: var(--card-bg); padding: 25px; border-radius: 12px; max-width: 400px; margin: 20px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
-        .auth-box input, .auth-box select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); box-sizing: border-box; }
         .btn-primary { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .link { margin-top: 15px; color: #007bff; cursor: pointer; font-size: 14px; }
         .guest-link { margin-top: 10px; color: #888; cursor: pointer; font-size: 14px; text-decoration: underline; }
-
         .subject-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; max-width: 600px; width: 100%; align-self: center; }
         .subject-card { background: var(--card-bg); padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid var(--border-color); transition: 0.2s; }
-        .subject-card:hover { border-color: #007bff; transform: translateY(-2px); }
         .subject-icon { font-size: 28px; display: block; margin-bottom: 5px; }
-
         .message { padding: 10px 15px; border-radius: 15px; max-width: 85%; line-height: 1.5; font-size: 15px; }
         .user-msg { align-self: flex-end; background: var(--chat-user); color: white; border-bottom-right-radius: 2px; }
         .ai-msg { align-self: flex-start; background: var(--chat-ai); color: var(--chat-ai-text); border-bottom-left-radius: 2px; }
-
-        .overlay-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 900; display: none; }
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; flex-direction: column; z-index: 2000; color: white; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -193,58 +143,48 @@ HTML_CODE = """
 </div>
 <div class="overlay-bg" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-<!-- MAIN APP -->
-<div class="main-content">
+<!-- MAIN APP STRUCTURE -->
+<div class="app-container">
     
+    <!-- HEADER -->
     <div class="header">
         <div class="header-left">
             <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
             <div class="title">AI Tutor</div>
         </div>
-        <div class="header-right" style="display:flex; align-items:center; gap:10px;">
+        <div class="header-right">
             <div id="top-auth-btn"></div>
-            <button class="menu-btn" onclick="toggleTheme()"><i class="fas fa-adjust"></i></button>
+            <button class="menu-btn" onclick="toggleTheme()" style="margin-left:10px;"><i class="fas fa-adjust"></i></button>
         </div>
     </div>
 
-    <!-- LOADING SCREEN -->
-    <div id="loading-overlay">
-        <div class="spinner"></div>
-        <div id="loading-text">Loading...</div>
-    </div>
-
-    <div class="screen-container">
-        <!-- 1. LOGIN SCREEN -->
+    <!-- CONTENT AREA -->
+    <div class="content-area">
+        
+        <!-- 1. LOGIN -->
         <div id="screen-login" class="screen">
             <div class="auth-box">
                 <h2>Welcome</h2>
-                <select id="login-lang">
-                    <option value="English">English</option>
-                    <option value="Urdu">Urdu (اردو)</option>
-                    <option value="Hindi">Hindi (हिंदी)</option>
-                </select>
+                <select id="login-lang"><option>English</option><option>Urdu</option><option>Hindi</option></select>
                 <input type="text" id="login-email" placeholder="Email / Username">
                 <input type="password" id="login-pass" placeholder="Password">
                 <button class="btn-primary" onclick="handleLogin()">Sign In</button>
                 <div class="link" onclick="showScreen('signup')">Create Account</div>
-                <div class="guest-link" onclick="continueAsGuest()">Skip & Continue as Guest &rarr;</div>
+                <div class="guest-link" onclick="continueAsGuest()">Skip & Continue as Guest</div>
             </div>
         </div>
 
-        <!-- 2. SIGNUP SCREEN -->
+        <!-- 2. SIGNUP -->
         <div id="screen-signup" class="screen">
             <div class="auth-box">
                 <h2>Join AI Tutor</h2>
-                <select id="signup-lang">
-                    <option value="English">English</option>
-                    <option value="Urdu">Urdu</option>
-                </select>
+                <select id="signup-lang"><option>English</option><option>Urdu</option></select>
                 <input type="text" id="signup-name" placeholder="Full Name">
                 <input type="email" id="signup-email" placeholder="Email">
                 <input type="password" id="signup-pass" placeholder="Password">
                 <button class="btn-primary" onclick="handleSignup()">Sign Up</button>
-                <div class="link" onclick="showScreen('login')">Have an account? Login</div>
-                <div class="guest-link" onclick="continueAsGuest()">Skip & Continue as Guest &rarr;</div>
+                <div class="link" onclick="showScreen('login')">Login</div>
+                <div class="guest-link" onclick="continueAsGuest()">Skip</div>
             </div>
         </div>
 
@@ -254,11 +194,8 @@ HTML_CODE = """
                 <h3>Hello, <span id="user-name-display">Student</span>!</h3>
                 <p>What do you want to learn?</p>
             </div>
-            
             <div class="subject-grid">
-                <div class="subject-card" onclick="startChat('Ask Anything')">
-                    <span class="subject-icon" style="color:#f39c12">✨</span><b>Ask Anything</b>
-                </div>
+                <div class="subject-card" onclick="startChat('Ask Anything')"><span class="subject-icon" style="color:#f39c12">✨</span><b>Ask Anything</b></div>
                 <div class="subject-card" onclick="startChat('Math')"><span class="subject-icon">📐</span>Math</div>
                 <div class="subject-card" onclick="startChat('Science')"><span class="subject-icon">🧬</span>Science</div>
                 <div class="subject-card" onclick="startChat('History')"><span class="subject-icon">🏛️</span>History</div>
@@ -267,8 +204,8 @@ HTML_CODE = """
             </div>
         </div>
 
-        <!-- 4. CHAT SCREEN (Fixed Layout) -->
-        <div id="screen-chat" class="screen">
+        <!-- 4. CHAT SCREEN (FLEX LAYOUT) -->
+        <div id="screen-chat">
             <div class="chat-header-bar">
                 <div style="display:flex; align-items:center;">
                     <button onclick="showScreen('dashboard')" style="background:none; border:none; font-size:18px; cursor:pointer; margin-right: 10px; color: var(--text-color);"><i class="fas fa-arrow-left"></i></button>
@@ -281,7 +218,6 @@ HTML_CODE = """
 
             <div class="chat-input-area">
                 <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;" onchange="handleImageSelect()">
-                
                 <div class="input-wrapper">
                     <input type="text" id="user-msg" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
                     <button class="camera-btn" onclick="triggerCamera()"><i class="fas fa-camera"></i></button>
@@ -289,8 +225,14 @@ HTML_CODE = """
                 <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
-    </div>
 
+    </div>
+</div>
+
+<!-- LOADING -->
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <div id="loading-text">Loading...</div>
 </div>
 
 <script>
@@ -323,7 +265,7 @@ HTML_CODE = """
     function updateUIState() {
         const authBtn = document.getElementById('top-auth-btn');
         const nameDisplay = document.getElementById('user-name-display');
-        nameDisplay.innerText = currentUser;
+        if(nameDisplay) nameDisplay.innerText = currentUser;
 
         if (isGuest) {
             authBtn.innerHTML = `<span class="auth-btn-top btn-signin" onclick="goToLogin()">Sign In</span>`;
@@ -396,13 +338,20 @@ HTML_CODE = """
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => { 
             s.classList.remove('active'); 
-            // Important: only hide non-active screens
-            if(s.id !== 'screen-'+id) s.style.display = 'none';
+            if(s.id !== 'screen-'+id && s.id !== 'screen-chat') s.style.display = 'none';
         });
-        const t = document.getElementById('screen-' + id);
-        t.classList.add('active');
-        // Important CSS Reset
-        t.style.display = (id === 'chat') ? 'flex' : 'block';
+
+        // Special handling for chat screen visibility
+        const chatScreen = document.getElementById('screen-chat');
+        const otherScreens = ['screen-login', 'screen-signup', 'screen-dashboard'];
+        
+        if (id === 'chat') {
+            chatScreen.classList.add('active'); // CSS handles flex display
+            otherScreens.forEach(sid => document.getElementById(sid).style.display = 'none');
+        } else {
+            chatScreen.classList.remove('active');
+            document.getElementById('screen-' + id).style.display = 'block';
+        }
     }
 
     function startNewChat() { toggleSidebar(); showScreen('dashboard'); }
@@ -410,6 +359,7 @@ HTML_CODE = """
         currentSubject = subject;
         document.getElementById('chat-subject-title').innerText = subject;
         document.getElementById('lang-display').innerText = currentLang.substring(0,2);
+        
         let greeting = isGuest ? "Hello Guest!" : `Hello ${currentUser}!`;
         document.getElementById('chat-history').innerHTML = `<div class="message ai-msg">${greeting} I am your <b>${subject}</b> Tutor.</div>`;
         addToHistory(subject);
@@ -432,7 +382,7 @@ HTML_CODE = """
     }
 
     function triggerCamera() { document.getElementById('camera-input').click(); }
-    function handleImageSelect() { alert("Image selected! (Image analysis feature coming soon)"); }
+    function handleImageSelect() { alert("Image selected! (Analysis feature coming soon)"); }
 
     async function sendMessage() {
         const input = document.getElementById('user-msg');
@@ -441,6 +391,7 @@ HTML_CODE = """
         addMessage(text, 'user-msg');
         input.value = '';
         const loadingId = addMessage("Thinking...", 'ai-msg');
+
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000);
         try {
